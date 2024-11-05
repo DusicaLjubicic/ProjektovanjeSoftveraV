@@ -129,6 +129,71 @@ public class DBBroker {
             Logger.getLogger(DBBroker.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public boolean login(String username, String pass) {
+        try {
+            //SELECT *FROM USER WHERE username='Duska' AND PASSWORD='duska';
+            String upit = "SELECT *FROM USER WHERE username=? AND PASSWORD=?";
+            PreparedStatement ps=Konekcija.getInstance().getConnection().prepareStatement(upit);
+            ps.setString(1, username);
+            ps.setString(2, pass);
+            
+            ResultSet rs=ps.executeQuery();
+            if(rs.next()){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBroker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    public List<Knjiga> filtriraj(String autor, String naziv) {
+        List<Knjiga> lista=new ArrayList<>();
+        try {
+            String upit="SELECT * \n" +
+                    "FROM KNJIGA K JOIN AUTOR A ON K.autorId=A.id WHERE 1=1";
+            
+            if(naziv!=null){
+                upit+=" AND k.naslov='"+naziv+"'";
+            }
+            if (autor!=null) {
+                String[] podaci=autor.split(" "); //kad kliknes enter on ce ti podeliti autora na ime  prezime
+                if(podaci[0]!=null){
+                    upit+=" AND a.ime='"+podaci[0]+"'";
+                }
+                if(podaci.length>=2 && podaci[1]!=null){
+                    upit+=" AND a.prezime='"+podaci[1]+"'";
+                }
+                //ovo bi radilo samo kad bi ukucala i naziv knjige i ime i prezime autora, ili samo ime autora, a nikako ne samo prezime
+            }
+            System.out.println(upit);
+            Statement st=Konekcija.getInstance().getConnection().createStatement();
+            ResultSet rs=st.executeQuery(upit);
+            while(rs.next()){
+                int id=rs.getInt("k.id");
+                String naslov=rs.getString("k.naslov");
+                int godIz=rs.getInt("k.godinaIzdanja");
+                String ISBN = rs.getString("k.ISBN");
+                String zanr=rs.getString("k.zanr");
+                Zanr z=Zanr.valueOf(zanr);
+                int idA=rs.getInt("a.id");
+                String ime=rs.getString("a.ime");
+                String prezime=rs.getString("a.prezime");
+                String biografija=rs.getString("a.biografija");
+                int godR=rs.getInt("a.godinaRodjenja");
+                Autor a =new Autor(idA, ime, prezime, godR, biografija);
+                
+                Knjiga k=new Knjiga(id, naslov, a, ISBN, godIz, z);
+                lista.add(k);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBroker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
+    }
     
     
 }

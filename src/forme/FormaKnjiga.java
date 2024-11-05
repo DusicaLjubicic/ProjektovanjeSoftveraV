@@ -190,10 +190,22 @@ public class FormaKnjiga extends javax.swing.JDialog {
 
     private void jButtonDodajActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDodajActionPerformed
         String naziv=jTextFieldNaziv.getText();
+        if(naziv==null || naziv.trim().isEmpty() || naziv.trim().length()<3){
+            //trim nam brise nepotrebne space-ove
+            JOptionPane.showMessageDialog(this, "Greska pogresan naziv", "Greska", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        //ovo dole ne treba za email nego samo primer za ogranicenja
+        //email treba da ima @, napravis string email isto kao za naziv i proveris:
+        //email.contains("@")
         String isbn=jTextFieldISBN.getText();
         int godIzdanja;
         try{
             godIzdanja=Integer.parseInt(jTextFieldGodIzdanja.getText());
+            if(godIzdanja<1800 || godIzdanja>2024){
+                JOptionPane.showMessageDialog(this, "Greska pogresna godina", "Greska", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }catch(NumberFormatException nfe){
             JOptionPane.showMessageDialog(this, "Godina izdanja mora biti broj!", "Greska", JOptionPane.ERROR_MESSAGE);
             return;
